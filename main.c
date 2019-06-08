@@ -8,17 +8,18 @@ int main()
 	int i = 0;
 	int current_world = 0;
 	//TODO: Declara dos mundos
-	bool mundo[TAM_Z][TAM_X][TAM_Y];
+	//bool mundo[TAM_Z][TAM_X][TAM_Y];
+	struct gol gol;
 
 	//TODO: inicializa el mundo
-	gol_init(mundo);
+	gol_init(&gol);
 	do {
 
 			printf("\033cIteration %d\n", i++);
 			//TODO: Imprime el mundo
-			gol_print(mundo[current_world]);
+			gol_print(&gol);
 			//Itera
-			gol_step(mundo, &current_world);
+			gol_step(&gol);
 
 
 	} while (getchar() != 'q');
