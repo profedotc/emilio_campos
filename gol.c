@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "gol.h"
 
+static int count_neighbors(struct gol *gol, int i, int j);
+static bool get_cell(struct gol *gol, int i, int j);
+
 void gol_init(struct gol *gol)
 {
 	gol->current_world = 0;
@@ -43,8 +46,8 @@ void gol_step(struct gol *gol)
 	int vecinas_vivas = 0;
 	for ( int i = 0; i < TAM_X; i++){
 		for ( int j = 0; j < TAM_Y; j++){
-			vecinas_vivas = gol_count_neighbors(gol,i,j);
-			if (gol_get_cell(gol,i,j)){
+			vecinas_vivas = count_neighbors(gol,i,j);
+			if (get_cell(gol,i,j)){
 				gol->worlds[(gol->current_world +1) % TAM_Z ][i][j] = (vecinas_vivas == 3) || (vecinas_vivas == 2);
 			}else{
 				gol->worlds[(gol->current_world +1) % TAM_Z ][i][j] = vecinas_vivas == 3;
@@ -58,23 +61,23 @@ void gol_step(struct gol *gol)
 
 }
 
-int gol_count_neighbors(struct gol *gol, int i, int j)
+static int count_neighbors(struct gol *gol, int i, int j)
 {
 
 	int totales = 0;
-	totales += gol_get_cell (gol, i-1, j-1);
-	totales += gol_get_cell (gol, i-1, j);
-	totales += gol_get_cell (gol, i-1, j+1);
-	totales += gol_get_cell (gol, i, j-1);
-	totales += gol_get_cell (gol, i, j+1);
-	totales += gol_get_cell (gol, i+1, j-1);
-	totales += gol_get_cell (gol, i+1, j);
-	totales += gol_get_cell (gol, i+1, j+1);
+	totales += get_cell (gol, i-1, j-1);
+	totales += get_cell (gol, i-1, j);
+	totales += get_cell (gol, i-1, j+1);
+	totales += get_cell (gol, i, j-1);
+	totales += get_cell (gol, i, j+1);
+	totales += get_cell (gol, i+1, j-1);
+	totales += get_cell (gol, i+1, j);
+	totales += get_cell (gol, i+1, j+1);
 	return totales;
 
 }
 
-bool gol_get_cell(struct gol *gol, int i, int j)
+static bool get_cell(struct gol *gol, int i, int j)
 {
 	if (i < 0 || i > TAM_X-1 || j < 0 || j > TAM_Y-1){
 		return false;
