@@ -14,10 +14,8 @@ struct gol {
 	int current_world;
 };
 void gol_init(struct gol *gol);
-void gol_print(struct gol *go);
+void gol_print(struct gol *gol);
 void gol_step(struct gol *gol);
-int gol_count_neighbors(struct gol *gol, int i, int j);
-bool gol_get_cell(struct gol *gol, int i, int j);
 
 
 #endif
