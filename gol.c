@@ -6,17 +6,17 @@ static bool get_cell(struct gol *gol, int i, int j);
 
 bool gol_alloc(struct gol *gol, int size_x, int size_y) {
 	for( int world = CURRENT; world <= NEXT; world++ ) {
-		gol->worlds[world] = malloc(size_x * sizeof(bool(*)));
+		gol->worlds[world] = malloc(size_x * sizeof(bool*));
 		if (!gol->worlds[world]) {
 			printf("Error in memory allocation");
-			free(gol->worlds[world]);
+			//free(gol->worlds[world]);
 			return false;
 		}
 		for (int x = 0; x < size_x; x++) {
 			gol->worlds[world][x] = malloc(size_y * sizeof(bool));
 			if (!gol->worlds[world][x]) {
 				printf("Error in memory allocation");
-				free(gol->worlds[world][x]);
+				//free(gol->worlds[world][x]);
 				return false;
 			}
 		}
@@ -93,10 +93,9 @@ void gol_step(struct gol *gol)
 static int count_neighbors(struct gol *gol, int x, int y)
 {
 
-	int totales = 0;
+	int totales = -get_cell(gol, x, y);
 	for (int i = x - 1; i <= x + 1; i++) {
 		for(int e = y - 1; e <= y + 1; e++) {
-			if (e != y || i != x)
 				totales += get_cell(gol, i, e);
 		}
 	}

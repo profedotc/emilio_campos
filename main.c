@@ -11,7 +11,7 @@ int main()
 	//bool mundo[TAM_Z][TAM_X][TAM_Y];
 	struct gol gol;
 
-	bool success = gol_alloc(&gol, TAM_X, TAM_Y);
+	bool success = gol_alloc(&gol, 10, 10);
 	if (!success) {
 		EXIT_FAILURE;
 	}
