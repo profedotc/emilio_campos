@@ -31,7 +31,7 @@ void gol_init(struct gol *gol)
 
 }
 
-void gol_print(struct gol *gol)
+void gol_print(const struct gol *gol)
 {
 	for (int i = 0; i < TAM_X ; i++){
 		for (int j = 0; j < TAM_Y; j++){

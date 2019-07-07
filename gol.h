@@ -14,7 +14,7 @@ struct gol {
 	int current_world;
 };
 void gol_init(struct gol *gol);
-void gol_print(struct gol *gol);
+void gol_print(const struct gol *gol);
 void gol_step(struct gol *gol);
 
 
