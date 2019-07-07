@@ -11,6 +11,11 @@ int main()
 	//bool mundo[TAM_Z][TAM_X][TAM_Y];
 	struct gol gol;
 
+	bool success = gol_alloc(&gol, TAM_X, TAM_Y);
+	if (!success) {
+		EXIT_FAILURE;
+	}
+
 	//TODO: inicializa el mundo
 	gol_init(&gol);
 	do {
@@ -23,6 +28,8 @@ int main()
 
 
 	} while (getchar() != 'q');
+
+	gol_free(&gol);
 
 	return EXIT_SUCCESS;
 
