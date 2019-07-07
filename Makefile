@@ -1,11 +1,22 @@
-.PHONY: all clean debug release
+CC = gcc
 
-all: debug
+.PHONY: main_test
+all: main main_test
 
 release: CFLAGS += -O3
 release: gol
 
-CFGLAS = -Wall
+CFGLAS = -Wall -WextraA
+
+test: FLAGS += -g -O3
+test: main_test
+
+main_test: main_test.o gol.o
+	$(CC) $(FLAGS) main_test.o gol.o -o main_test
+	valgrind --leak-check=full ./main_test
+
+main_test.o: main_test.c gol.o
+	$(CC) $(FLAGS) -c main_test.c
 
 
 debug: CFLAGS += -g -O0
