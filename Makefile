@@ -1,11 +1,15 @@
-.PHONY: clean 
+.PHONY: all clean debug release
 
-CC = gcc
-	CFGLAS = -Wall
+all: debug
+
+release: CFLAGS += -O3
+release: gol
+
+CFGLAS = -Wall
 
 
-##debug: CFLAGS += -g
-##	debug: gol
+debug: CFLAGS += -g -O0
+debug: gol
 
 gol: main.o gol.o
 	$(CC) $(CFLAGS) main.o gol.o -o gol
