@@ -4,38 +4,65 @@
 static int count_neighbors(struct gol *gol, int i, int j);
 static bool get_cell(struct gol *gol, int i, int j);
 
+bool gol_alloc(struct gol *gol, int size_x, int size_y) {
+	for( int world = CURRENT; world <= NEXT; world++ ) {
+		gol->worlds[world] = malloc(size_x * sizeof(bool*));
+		if (!gol->worlds[world]) {
+			printf("Error in memory allocation");
+			//free(gol->worlds[world]);
+			return false;
+		}
+		for (int x = 0; x < size_x; x++) {
+			gol->worlds[world][x] = malloc(size_y * sizeof(bool));
+			if (!gol->worlds[world][x]) {
+				printf("Error in memory allocation");
+				//free(gol->worlds[world][x]);
+				return false;
+			}
+		}
+	}
+	gol->size_x = size_x;
+	gol->size_y = size_y;
+	return true;
+}
+
+void gol_free(struct gol *gol) {
+	for( int world = CURRENT; world <= NEXT; world++ ) {
+		for (int x = 0; x < gol->size_x; x++) {
+			free(gol->worlds[world][x]);
+		}
+		free(gol->worlds[world]);
+	}
+}
+
 void gol_init(struct gol *gol)
 {
-	gol->current_world = 0;
-	// TODO: Poner el mundo a false
-	for (int k = 0; k < TAM_Z ; k++){
-		for (int i = 0; i < TAM_X ; i++){
-			for (int j = 0; j < TAM_Y ; j++){
-				gol->worlds[gol->current_world][i][j] = 0;
-			}
-			printf("\n");
-		}
 
+	for (int x = 0; x < gol->size_x; x++) {
+		for (int y = 0; y < gol->size_y; y++) {
+			gol->worlds[CURRENT][x][y] = 0;
+		}
 	}
+
+
 	/* TODO: Inicializar con el patrón del glider:
 	*           . # .
 	*           . . #
 	*           # # #
 	*/
-	gol->current_world = 0;
-	gol->worlds[gol->current_world][0][1] = 1;
-	gol->worlds[gol->current_world][1][2] = 1;
-	gol->worlds[gol->current_world][2][0] = 1;
-	gol->worlds[gol->current_world][2][1] = 1;
-	gol->worlds[gol->current_world][2][2] = 1;
+	gol->worlds[CURRENT][0][1] = 1;
+	gol->worlds[CURRENT][1][2] = 1;
+	gol->worlds[CURRENT][2][0] = 1;
+	gol->worlds[CURRENT][2][1] = 1;
+	gol->worlds[CURRENT][2][2] = 1;
 
 }
 
 void gol_print(const struct gol *gol)
 {
-	for (int i = 0; i < TAM_X ; i++){
-		for (int j = 0; j < TAM_Y; j++){
-			printf ("%c ", gol->worlds[gol->current_world][i][j]?'#':'.');
+	for (int i = 0; i < gol->size_x ; i++){
+		for (int j = 0; j < gol->size_y; j++){
+			printf ("%c ", gol->worlds[CURRENT][i][j]?'#':'.');
 		}
 		printf("\n");
 	}
@@ -44,45 +71,44 @@ void gol_print(const struct gol *gol)
 void gol_step(struct gol *gol)
 {
 	int vecinas_vivas = 0;
-	for ( int i = 0; i < TAM_X; i++){
-		for ( int j = 0; j < TAM_Y; j++){
+	for ( int i = 0; i < gol->size_x; i++){
+		for ( int j = 0; j < gol->size_y; j++){
 			vecinas_vivas = count_neighbors(gol,i,j);
-			if (get_cell(gol,i,j)){
-				gol->worlds[(gol->current_world +1) % TAM_Z ][i][j] = (vecinas_vivas == 3) || (vecinas_vivas == 2);
+			if (gol->worlds[CURRENT][i][j]){
+				gol->worlds[NEXT][i][j] = (vecinas_vivas == 3) || (vecinas_vivas == 2);
 			}else{
-				gol->worlds[(gol->current_world +1) % TAM_Z ][i][j] = vecinas_vivas == 3;
+				gol->worlds[NEXT][i][j] = vecinas_vivas == 3;
 			}
 			vecinas_vivas = 0;
 		}
 		printf("\n");
 	}
 
-	gol->current_world = (gol->current_world + 1) % TAM_Z;
+	bool **world_aux = gol->worlds[CURRENT];
+	gol->worlds[CURRENT] = gol->worlds[NEXT];
+	gol->worlds[NEXT] = world_aux;
 
 }
 
-static int count_neighbors(struct gol *gol, int i, int j)
+static int count_neighbors(struct gol *gol, int x, int y)
 {
 
-	int totales = 0;
-	totales += get_cell (gol, i-1, j-1);
-	totales += get_cell (gol, i-1, j);
-	totales += get_cell (gol, i-1, j+1);
-	totales += get_cell (gol, i, j-1);
-	totales += get_cell (gol, i, j+1);
-	totales += get_cell (gol, i+1, j-1);
-	totales += get_cell (gol, i+1, j);
-	totales += get_cell (gol, i+1, j+1);
+	int totales = -get_cell(gol, x, y);
+	for (int i = x - 1; i <= x + 1; i++) {
+		for(int e = y - 1; e <= y + 1; e++) {
+				totales += get_cell(gol, i, e);
+		}
+	}
 	return totales;
 
 }
 
 static bool get_cell(struct gol *gol, int i, int j)
 {
-	if (i < 0 || i > TAM_X-1 || j < 0 || j > TAM_Y-1){
+	if (i < 0 || i > gol->size_x - 1 || j < 0 || j > gol->size_y - 1){
 		return false;
 	}else{
 
-		return gol->worlds[gol->current_world][i][j];
+		return gol->worlds[CURRENT][i][j];
 	}
 }
