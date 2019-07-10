@@ -1,4 +1,4 @@
-.PHONY: all clean debug release
+.PHONY: all clean debug release test
 
 all: debug
 
@@ -7,6 +7,8 @@ release: gol
 
 CFGLAS = -Wall
 
+test: CFLAGS = -Wall -O0
+test: mem_test
 
 debug: CFLAGS += -g -O0
 debug: gol
@@ -19,6 +21,16 @@ main.o: main.c gol.h
 
 gol.o: gol.c
 	$(CC) $(CFLAGS) -c gol.c
+
+mem_test: mem_test.o gol.o
+	$(CC) $(CFLAGS) mem_test.o gol.o -o mem_test
+
+mem_test.o: mem_test.c gol.h
+	$(CC) $(CFLAGS) -c mem_test.c
+
+test:
+	valgrind --leak-check=full ./mem_test
+
 
 clean: 
 	rm -f *.o gol

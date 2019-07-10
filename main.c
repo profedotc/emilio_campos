@@ -6,12 +6,12 @@
 int main()
 {
 	int i = 0;
-	int current_world = 0;
+	//int current_world = 0;
 	//TODO: Declara dos mundos
 	//bool mundo[TAM_Z][TAM_X][TAM_Y];
 	struct gol gol;
 
-	bool success = gol_alloc(&gol, 10, 10);
+	bool success = gol_alloc(&gol, TAM_X, TAM_Y);
 	if (!success) {
 		EXIT_FAILURE;
 	}

@@ -1,24 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "gol.h"
 
+
 static int count_neighbors(struct gol *gol, int i, int j);
-static bool get_cell(struct gol *gol, int i, int j);
+
+static bool get_cell(const struct gol *gol, enum world_type wtype, int i, int j);
+static void set_cell(struct gol *gol, enum world_type wtype, int i, int j, bool value);
+static void fix_coords(const struct gol *gol, int *i, int *j);
+
+
 
 bool gol_alloc(struct gol *gol, int size_x, int size_y) {
 	for( int world = CURRENT; world <= NEXT; world++ ) {
-		gol->worlds[world] = malloc(size_x * sizeof(bool*));
+		gol->worlds[world] = (bool *)malloc(size_x * size_y * sizeof(bool));
 		if (!gol->worlds[world]) {
 			printf("Error in memory allocation");
 			//free(gol->worlds[world]);
 			return false;
-		}
-		for (int x = 0; x < size_x; x++) {
-			gol->worlds[world][x] = malloc(size_y * sizeof(bool));
-			if (!gol->worlds[world][x]) {
-				printf("Error in memory allocation");
-				//free(gol->worlds[world][x]);
-				return false;
-			}
 		}
 	}
 	gol->size_x = size_x;
@@ -27,12 +26,8 @@ bool gol_alloc(struct gol *gol, int size_x, int size_y) {
 }
 
 void gol_free(struct gol *gol) {
-	for( int world = CURRENT; world <= NEXT; world++ ) {
-		for (int x = 0; x < gol->size_x; x++) {
-			free(gol->worlds[world][x]);
-		}
+	for( int world = CURRENT; world <= NEXT; world++ )
 		free(gol->worlds[world]);
-	}
 }
 
 void gol_init(struct gol *gol)
@@ -40,7 +35,7 @@ void gol_init(struct gol *gol)
 
 	for (int x = 0; x < gol->size_x; x++) {
 		for (int y = 0; y < gol->size_y; y++) {
-			gol->worlds[CURRENT][x][y] = 0;
+			set_cell(gol, CURRENT, x, y, 0);
 		}
 	}
 
@@ -50,11 +45,12 @@ void gol_init(struct gol *gol)
 	*           . . #
 	*           # # #
 	*/
-	gol->worlds[CURRENT][0][1] = 1;
-	gol->worlds[CURRENT][1][2] = 1;
-	gol->worlds[CURRENT][2][0] = 1;
-	gol->worlds[CURRENT][2][1] = 1;
-	gol->worlds[CURRENT][2][2] = 1;
+ 	set_cell(gol, CURRENT, 0, 1, 1);
+    	set_cell(gol, CURRENT, 1, 2, 1);
+    	set_cell(gol, CURRENT, 2, 0, 1);
+    	set_cell(gol, CURRENT, 2, 1, 1);
+    	set_cell(gol, CURRENT, 2, 2, 1);
+	
 
 }
 
@@ -62,7 +58,8 @@ void gol_print(const struct gol *gol)
 {
 	for (int i = 0; i < gol->size_x ; i++){
 		for (int j = 0; j < gol->size_y; j++){
-			printf ("%c ", gol->worlds[CURRENT][i][j]?'#':'.');
+			printf ("%c ", get_cell(gol, CURRENT, i, j)?'#':'.');
+
 		}
 		printf("\n");
 	}
@@ -74,17 +71,17 @@ void gol_step(struct gol *gol)
 	for ( int i = 0; i < gol->size_x; i++){
 		for ( int j = 0; j < gol->size_y; j++){
 			vecinas_vivas = count_neighbors(gol,i,j);
-			if (gol->worlds[CURRENT][i][j]){
-				gol->worlds[NEXT][i][j] = (vecinas_vivas == 3) || (vecinas_vivas == 2);
+			if (get_cell(gol, CURRENT, i, j)){
+				set_cell(gol, NEXT, i, j, vecinas_vivas == 2 || vecinas_vivas == 3);
 			}else{
-				gol->worlds[NEXT][i][j] = vecinas_vivas == 3;
+				set_cell(gol, NEXT, i, j, vecinas_vivas == 3);
 			}
 			vecinas_vivas = 0;
 		}
 		printf("\n");
 	}
 
-	bool **world_aux = gol->worlds[CURRENT];
+	bool *world_aux = gol->worlds[CURRENT];
 	gol->worlds[CURRENT] = gol->worlds[NEXT];
 	gol->worlds[NEXT] = world_aux;
 
@@ -93,22 +90,49 @@ void gol_step(struct gol *gol)
 static int count_neighbors(struct gol *gol, int x, int y)
 {
 
-	int totales = -get_cell(gol, x, y);
-	for (int i = x - 1; i <= x + 1; i++) {
-		for(int e = y - 1; e <= y + 1; e++) {
-				totales += get_cell(gol, i, e);
-		}
-	}
-	return totales;
+	int totales = 0;
+
+ 	totales += get_cell(gol, CURRENT, x-1, y-1);
+    	totales += get_cell(gol, CURRENT, x-1, y);
+    	totales += get_cell(gol, CURRENT, x-1, y+1);
+    	totales += get_cell(gol, CURRENT, x, y-1);
+    	totales += get_cell(gol, CURRENT, x, y+1);
+    	totales += get_cell(gol, CURRENT, x+1, y-1);
+    	totales += get_cell(gol, CURRENT, x+1, y);
+    	totales += get_cell(gol, CURRENT, x+1, y+1);
+
+    	return totales;
 
 }
 
-static bool get_cell(struct gol *gol, int i, int j)
+
+static void fix_coords(const struct gol *gol, int *i, int *j) {
+
+    if (*i >= gol->size_x)
+	*i = 0;
+    else if (*i < 0)
+	*i = gol->size_x - 1;
+
+    if (*j >= gol->size_y)
+	*j = 0;
+    else if (*j < 0)
+	*j = gol->size_y - 1;
+}
+
+static bool get_cell(const struct gol *gol, enum world_type wtype, int i, int j)
 {
-	if (i < 0 || i > gol->size_x - 1 || j < 0 || j > gol->size_y - 1){
-		return false;
-	}else{
+	fix_coords(gol, &i, &j);
+	return gol->worlds[wtype][j+i*gol->size_y];
 
-		return gol->worlds[CURRENT][i][j];
-	}
 }
+
+
+
+static void set_cell(struct gol *gol, enum world_type wtype, int i, int j, bool value)
+{
+
+    	fix_coords(gol, &i, &j);
+	gol->worlds[wtype][j + i * gol->size_y] = value;
+	//*(self->worlds[wtype] + j + i * self->size_y) = value;	
+}
+	
