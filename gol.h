@@ -6,14 +6,15 @@
 #include <stdbool.h>
 
 #define TAM_X 10
-#define TAM_Y 10
+#define TAM_Y 20
+#define NUM_WORLDS 2
 
 struct gol {
-	bool **worlds[2];
+	bool *worlds[NUM_WORLDS];
 	int size_x;
 	int size_y;
 };
-enum current_world {
+enum world_type {
 	CURRENT,
 	NEXT
 };
